@@ -1,0 +1,1 @@
+function cutscene:edit/workspace_start

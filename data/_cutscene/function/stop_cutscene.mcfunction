@@ -1,0 +1,1 @@
+function cutscene:player/stop

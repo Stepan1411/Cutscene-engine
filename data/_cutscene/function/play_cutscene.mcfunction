@@ -1,0 +1,1 @@
+tellraw @a [{"text":"--------------","color":"yellow"},"\n\n",{"text":"CLICK ON TEXT","color":"aqua","click_event":{"action":"suggest_command","command":"/function cutscene:cutscene/play {id:\"cutscene_name\"}"}},"\n\n",{"text":"--------------","color":"yellow"}]
