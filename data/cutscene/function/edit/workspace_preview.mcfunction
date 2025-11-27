@@ -17,4 +17,4 @@ execute unless data storage cutscene:workspace generated_points[0] run return 0
 scoreboard players set @s cutscene.vis_timer -999
 
 function cutscene:edit/workspace_save {id:"preview_temp"}
-function cutscene:cutscene/play {id:"preview_temp"}
+function cutscene:cutscene/play {id:"preview_temp",skippable:1,skippable_to_end:1}

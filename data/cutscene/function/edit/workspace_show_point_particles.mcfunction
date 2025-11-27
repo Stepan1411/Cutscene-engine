@@ -4,7 +4,7 @@
 # Спавнить маркер для правильного отображения частиц
 $summon marker $(x) $(y) $(z) {Tags:["cutscene.particle_marker"]}
 
-# Тип 1 - исходные точки (зеленые)
+# Тип 1 - исходные точки (зеленые с направлением взгляда)
 execute if score #particle_type cutscene.temp matches 1 as @e[tag=cutscene.particle_marker,limit=1] at @s run particle wax_off ~ ~ ~ 0 0 0 0 1 force @a
 $execute if score #particle_type cutscene.temp matches 1 as @e[tag=cutscene.particle_marker,limit=1] at @s rotated $(rx) $(ry) run particle wax_on ^ ^ ^0.2 0 0 0 0 1 force @a
 $execute if score #particle_type cutscene.temp matches 1 as @e[tag=cutscene.particle_marker,limit=1] at @s rotated $(rx) $(ry) run particle wax_on ^ ^ ^0.4 0 0 0 0 1 force @a

@@ -5,6 +5,9 @@
 # Получение UUID игрока
 data modify storage cutscene:temp player_uuid set from entity @s UUID
 
+# Сохранить инвентарь игрока
+function cutscene:player/save_inventory
+
 # Сохранение текущего состояния игрока
 data modify storage cutscene:temp saved_state set value {}
 execute store result storage cutscene:temp saved_state.x double 1 run data get entity @s Pos[0]
@@ -14,16 +17,25 @@ execute store result storage cutscene:temp saved_state.yaw float 1 run data get 
 execute store result storage cutscene:temp saved_state.pitch float 1 run data get entity @s Rotation[1]
 data modify storage cutscene:temp saved_state.gamemode set from entity @s playerGameType
 
-# Отладка - проверить сохраненный gamemode
-tellraw @s[tag=debug] [{"text":"[DEBUG] Сохранен gamemode: ","color":"gray"},{"nbt":"saved_state.gamemode","storage":"cutscene:temp"}]
-
 # Установка scoreboards для игрока
 scoreboard players set @s cutscene.state 1
 scoreboard players set @s cutscene.frame 0
-scoreboard players set @s cutscene.timer 0
+scoreboard players set @s cutscene.timer -1
 
-# Получение длительности катсцены и сохранение в отдельный scoreboard
-execute store result score @s cutscene.duration run data get storage cutscene:temp cutscene_data.duration
+# Установить флаги skippable и skippable_to_end из параметров
+execute store result score @s cutscene.skippable run data get storage cutscene:temp play_data.skippable
+execute store result score @s cutscene.skip_to_end run data get storage cutscene:temp play_data.skippable_to_end
+
+# Получение длительности катсцены - используем количество кадров
+execute store result score @s cutscene.duration run data get storage cutscene:temp cutscene_data.frames
+
+# Fallback: если кадров 0, использовать duration из настроек
+execute if score @s cutscene.duration matches 0 store result score @s cutscene.duration run data get storage cutscene:temp cutscene_data.duration
+
+# Если все еще 0, установить минимум 100 тиков
+execute if score @s cutscene.duration matches 0 run scoreboard players set @s cutscene.duration 100
+
+tellraw @s[tag=debug] [{"text":"[DEBUG] Duration: ","color":"gray"},{"score":{"name":"@s","objective":"cutscene.duration"},"color":"white"}]
 
 # Генерация уникального ID для этой катсцены (используем UUID игрока как основу)
 # Для простоты используем случайное число от 1 до 1000000
@@ -55,5 +67,4 @@ tellraw @s[tag=debug] {"text":"[Cutscene Engine] Катсцена началас
 # Телепортация камеры к первому кадру
 execute if data storage cutscene:temp cutscene_data.frames[0].pos run function cutscene:camera/tp_to_first_frame
 
-# Запуск первого кадра
-function cutscene:player/check_frames
+# НЕ вызываем check_frames здесь - он вызовется в первом update

@@ -1,8 +1,16 @@
 # Cutscene System - Save Workspace
 # Сохранение workspace в катсцену с указанным ID
 
-# Создать катсцену
-$function cutscene:cutscene/create {id:"$(id)",name:"Workspace Cutscene",duration:200}
+# Получить длину из настроек workspace (по умолчанию 200)
+execute store result score #cutscene_length cutscene.temp run data get storage cutscene:workspace settings.length
+execute unless data storage cutscene:workspace settings.length run scoreboard players set #cutscene_length cutscene.temp 200
+execute store result storage cutscene:temp save_duration int 1 run scoreboard players get #cutscene_length cutscene.temp
+
+# Сохранить ID для макроса
+$data modify storage cutscene:temp save_id set value "$(id)"
+
+# Создать катсцену с правильной длительностью через вспомогательную функцию
+function cutscene:edit/workspace_save_create_macro with storage cutscene:temp
 
 # Сохранить точки
 $data modify storage cutscene:temp cutscene_id set value "$(id)"
@@ -20,8 +28,8 @@ $execute if score localization l matches 2 run tellraw @s [{"text":"[Editor] ","
 execute store result score #point_count cutscene.temp run data get storage cutscene:workspace points
 execute if score localization l matches 1 run tellraw @s [{"text":"Точек: ","color":"gray"},{"score":{"name":"#point_count","objective":"cutscene.temp"},"color":"white"}]
 execute if score localization l matches 2 run tellraw @s [{"text":"Points: ","color":"gray"},{"score":{"name":"#point_count","objective":"cutscene.temp"},"color":"white"}]
-$execute if score localization l matches 1 run tellraw @s [{"text":"[▶ Запустить катсцену]","color":"aqua","bold":true,"click_event":{"action":"suggest_command","command":"/function cutscene:cutscene/play {id:\"$(id)\"}"}}]
-$execute if score localization l matches 2 run tellraw @s [{"text":"[▶ Play cutscene]","color":"aqua","bold":true,"click_event":{"action":"suggest_command","command":"/function cutscene:cutscene/play {id:\"$(id)\"}"}}]
+$execute if score localization l matches 1 run tellraw @s [{"text":"[▶ Запустить катсцену]","color":"aqua","bold":true,"click_event":{"action":"suggest_command","command":"/function cutscene:cutscene/play {id:\"$(id)\",skippable:0,skippable_to_end:0}"}}]
+$execute if score localization l matches 2 run tellraw @s [{"text":"[▶ Play cutscene]","color":"aqua","bold":true,"click_event":{"action":"suggest_command","command":"/function cutscene:cutscene/play {id:\"$(id)\",skippable:0,skippable_to_end:0}"}}]
 playsound minecraft:entity.player.levelup master @s ~ ~ ~ 1 1.2
 
 # Убрать флаг несохраненной катсцены

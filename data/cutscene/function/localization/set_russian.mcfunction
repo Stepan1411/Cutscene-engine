@@ -4,6 +4,9 @@
 # Set language score to 1 (Russian)
 scoreboard players set localization l 1
 
+# Mark that localization has been set by user
+scoreboard players set #localization_set cutscene.temp 1
+
 # Display confirmation message in Russian
 tellraw @s ""
 tellraw @s [{"text":"[Cutscene Engine] ","color":"gold"},{"text":"Язык изменен на ","color":"green"},{"text":"Русский","color":"aqua","bold":true}]

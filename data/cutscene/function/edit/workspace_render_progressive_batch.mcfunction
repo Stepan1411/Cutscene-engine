@@ -1,11 +1,9 @@
-# Интерполяция одного сегмента
+# Обработка пакета кадров (до 50 за раз)
 execute if score #t cutscene.temp >= #ticks_per_segment cutscene.temp run return 0
+execute if score #batch_count cutscene.temp matches 50.. run return 0
 
-# Ограничение на количество итераций (предотвращение превышения лимита команд)
-# Каждая итерация = ~50 команд, лимит 65536 команд
-# Безопасный лимит: 1000 итераций = ~50000 команд
-scoreboard players add #render_commands cutscene.temp 1
-execute if score #render_commands cutscene.temp matches 1000.. run return 0
+# Защита от бесконечного цикла - если кадров больше чем ожидалось
+execute if score #rendered_frames cutscene.temp > #total_frames cutscene.temp run return 0
 
 # Получить координаты точки 1
 execute store result score #p1_x cutscene.temp run data get storage cutscene:temp point1.pos[0] 1000
@@ -62,10 +60,7 @@ scoreboard players operation #result_ry cutscene.temp += #p2_ry cutscene.temp
 execute if score #result_rx cutscene.temp matches ..-18000 run scoreboard players add #result_rx cutscene.temp 36000
 execute if score #result_rx cutscene.temp matches 18000.. run scoreboard players remove #result_rx cutscene.temp 36000
 
-# Отладка - показать первую точку
-execute if score #t cutscene.temp matches 0 run tellraw @a[tag=debug] [{"text":"[DEBUG] Рендер сегмента - результат: x=","color":"gray"},{"score":{"name":"#result_x","objective":"cutscene.temp"},"color":"white"},{"text":" y=","color":"gray"},{"score":{"name":"#result_y","objective":"cutscene.temp"},"color":"white"},{"text":" z=","color":"gray"},{"score":{"name":"#result_z","objective":"cutscene.temp"},"color":"white"}]
-
-# Создать точку с инициализированными массивами
+# Создать точку
 data remove storage cutscene:temp inter_point
 data modify storage cutscene:temp inter_point set value {pos:[0d,0d,0d],rot:[0f,0f],tick:0}
 execute store result storage cutscene:temp inter_point.tick int 1 run scoreboard players get #current_tick cutscene.temp
@@ -75,16 +70,14 @@ execute store result storage cutscene:temp inter_point.pos[2] double 0.001 run s
 execute store result storage cutscene:temp inter_point.rot[0] float 0.01 run scoreboard players get #result_rx cutscene.temp
 execute store result storage cutscene:temp inter_point.rot[1] float 0.01 run scoreboard players get #result_ry cutscene.temp
 
-# НЕ копируем сообщения в промежуточные точки - они должны показываться только на исходных точках
-# Это предотвращает спам сообщений на каждом кадре
-
-# Отладка - показать созданную точку
-execute if score #t cutscene.temp matches 0 run tellraw @a[tag=debug] [{"text":"[DEBUG] Созданная точка: ","color":"gray"},{"nbt":"inter_point","storage":"cutscene:temp","color":"white"}]
-
 # Добавить в результат
-data modify storage cutscene:temp render_result append from storage cutscene:temp inter_point
+data modify storage cutscene:render result append from storage cutscene:temp inter_point
 
-# Следующий шаг
+# Следующий кадр
 scoreboard players add #t cutscene.temp 1
 scoreboard players add #current_tick cutscene.temp 1
-function cutscene:edit/workspace_render_segment
+scoreboard players add #batch_count cutscene.temp 1
+scoreboard players add #rendered_frames cutscene.temp 1
+
+# Продолжить пакет
+function cutscene:edit/workspace_render_progressive_batch
